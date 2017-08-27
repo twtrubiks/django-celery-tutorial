@@ -1,0 +1,27 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+
+</head>
+<body>
+
+<div class="container">
+    <div class="jumbotron">
+        <h1>Django Celery Tutorial</h1>
+        <p>celery tutorial</p>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+</body>
+</html>

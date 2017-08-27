@@ -1,0 +1,28 @@
+{% extends "tutorial/base.html" %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+
+{% block title %}
+    dasshboard
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-3">
+{#            <form action="{% url "tutorial:task_use_celery" %}" method="post">#}
+{#                {% csrf_token %}#}
+{#                <button type="submit" class="btn btn-primary">use celery</button>#}
+{#            </form>#}
+            <a href="{% url "tutorial:task_use_celery" %}" class="btn btn-primary" role="button">use celery</a>
+        </div>
+        <div class="col-md-3">
+{#            <form action="{% url "tutorial:task_not_use_celery" %}" method="post">#}
+{#                {% csrf_token %}#}
+{#                <button type="submit" class="btn btn-warning">not use celery</button>#}
+{#            </form>#}
+            <a href="{% url "tutorial:task_not_use_celery" %}" class="btn btn-warning" role="button">not use celery</a>
+        </div>
+    </div>
+
+{% endblock %}
