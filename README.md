@@ -16,6 +16,18 @@
 
 * [使用 Django 建立一個簡易版購物網站](https://github.com/twtrubiks/django-shop-tutorial)
 
+## 前言
+
+先來介紹一個名詞，訊息佇列（消息對列 ），英文為 Message Queue（ MQ ），
+
+來看看 [wiki](https://zh.wikipedia.org/wiki/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97) 上面的說明，是一種行程間通訊或同一行程的不同執行緒間的通訊方式，
+
+軟體的貯列用來處理一系列的輸入，通常是來自使用者。訊息佇列本身是**異步的**，它
+
+允許接收者在訊息傳送很長時間後再取回訊息，這和大多數通訊協定是不同的。
+
+訊息佇列有很多開源的實現，像是本篇就會介紹到 [RabbitMQ](http://www.rabbitmq.com/)。
+
 ## 可以從這篇文章學到什麼
 
 * [Django](https://github.com/django/django) 如何結合 [Celery](http://celery.readthedocs.io/en/latest/index.html) 使用
@@ -75,17 +87,23 @@ It's a task queue with focus on real-time processing, while also supporting task
 
 ***Celery requires a solution to send and receive messages; usually this comes in the form of a separate service called a message broker.***
 
-以下將介紹 Broker ，建議使用 RabbitMQ（ 官方推薦 ），本篇教學
+以下將介紹 Broker ，建議使用 [RabbitMQ](http://www.rabbitmq.com/)（ 官方推薦 ），本篇教學
 
-也會使用 RabbitMQ 來介紹，其他的 Broker 使用就留給大家去研究  :stuck_out_tongue_winking_eye:
+也會使用 [RabbitMQ](http://www.rabbitmq.com/) 來介紹，其他的 Broker 使用就留給大家去研究  :stuck_out_tongue_winking_eye:
+
+什麼是 Broker :question: 可以把它想成是中間人，相信這樣好懂很多 :grin:
+
+再說明一下為什麼需要 Broker，原因是因為 Celery 沒有 Message Queue 的功能，所以需要
+
+Broker（ 像是 [RabbitMQ](http://www.rabbitmq.com/) ）來完成他。
 
 #### RabbitMQ
 
-RabbitMQ is feature-complete, stable, durable and easy to install. It's an excellent choice for a production environment.
+[RabbitMQ](http://www.rabbitmq.com/) is feature-complete, stable, durable and easy to install. It's an excellent choice for a production environment.
 
 ##### Installing RabbitMQ
 
-以下將介紹 **Linux**，**macOS**，**Windows** 安裝 RabbitMQ 的方法，除了
+以下將介紹 **Linux**，**macOS**，**Windows** 安裝 [RabbitMQ](http://www.rabbitmq.com/) 的方法，除了
 
 Linux 沒嘗試之外，macOS 以及 Windows 我都有在電腦上安裝成功。
 
