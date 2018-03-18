@@ -59,6 +59,8 @@ It's a task queue with focus on real-time processing, while also supporting task
 
 畫面一直等，等到轉檔結束，才能開始做其他事情 ？
 
+範例可參考另一個 [docker-django-celery-tutorial](https://github.com/twtrubiks/docker-django-celery-tutorial) 教學。
+
 **情境二：**
 
 當我們需要寄送 e-mail 時，我們是該讓寄信這個工作在背景處理，使用
@@ -406,6 +408,14 @@ celery flower -A django_celery_tutorial
 更多說明可參考官網
 
 [http://flower.readthedocs.io/en/latest/](http://flower.readthedocs.io/en/latest/)
+
+## 後記
+
+這次是帶大家在自己的電腦上安裝環境，有時候的確會遇到環境上的問題 ( 很麻煩 :unamused: ) ，
+
+所以這邊蠻推薦大家使用 docker 安裝，我有再寫一篇使用 docker 安裝 celery 的教學，有興趣
+
+的朋友可以前往 [docker-django-celery-tutorial](https://github.com/twtrubiks/docker-django-celery-tutorial) 閱讀 :smiley:
 
 ## 執行環境
 
