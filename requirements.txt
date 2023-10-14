@@ -1,4 +1,4 @@
-django
-celery
-flower
-django-bootstrap3
+Django==4.0.5
+celery==5.2.7
+flower==1.0.0
+django-bootstrap3==21.2

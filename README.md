@@ -2,7 +2,7 @@
 
  Django-celery-tutorial 基本教學 - 從無到有 Django-celery-tutorial 📝
 
- 今天要教大家使用 [Django](https://github.com/django/django) 結合 [Celery](http://celery.readthedocs.io/en/latest/index.html) :smile:
+ 今天要教大家使用 [Django](https://github.com/django/django) 結合 [Celery](https://docs.celeryq.dev/en/latest/index.html) :smile:
 
 * [Youtube Tutorial - part1](https://youtu.be/9nrtD9cg_Qo)
 
@@ -26,7 +26,7 @@
 
 允許接收者在訊息傳送很長時間後再取回訊息，這和大多數通訊協定是不同的。
 
-訊息佇列有很多開源的實現，像是本篇就會介紹到 [RabbitMQ](http://www.rabbitmq.com/)。
+訊息佇列有很多開源的實現，像是本篇就會介紹到 [RabbitMQ](https://www.rabbitmq.com/)。
 
 ## 可以從這篇文章學到什麼
 
@@ -89,25 +89,27 @@ It's a task queue with focus on real-time processing, while also supporting task
 
 ***Celery requires a solution to send and receive messages; usually this comes in the form of a separate service called a message broker.***
 
-以下將介紹 Broker ，建議使用 [RabbitMQ](http://www.rabbitmq.com/)（ 官方推薦 ），本篇教學
+以下將介紹 Broker ，建議使用 [RabbitMQ](https://www.rabbitmq.com/)（ 官方推薦 ），本篇教學
 
-也會使用 [RabbitMQ](http://www.rabbitmq.com/) 來介紹，其他的 Broker 使用就留給大家去研究  :stuck_out_tongue_winking_eye:
+也會使用 [RabbitMQ](https://www.rabbitmq.com/) 來介紹，其他的 Broker 使用就留給大家去研究  :stuck_out_tongue_winking_eye:
 
 什麼是 Broker :question: 可以把它想成是中間人，相信這樣好懂很多 :grin:
 
 再說明一下為什麼需要 Broker，原因是因為 Celery 沒有 Message Queue 的功能，所以需要
 
-Broker（ 像是 [RabbitMQ](http://www.rabbitmq.com/) ）來完成他。
+Broker（ 像是 [RabbitMQ](https://www.rabbitmq.com/) ）來完成他。
 
 #### RabbitMQ
 
-[RabbitMQ](http://www.rabbitmq.com/) is feature-complete, stable, durable and easy to install. It's an excellent choice for a production environment.
+[RabbitMQ](https://www.rabbitmq.com/) is feature-complete, stable, durable and easy to install. It's an excellent choice for a production environment.
 
 ##### Installing RabbitMQ
 
-以下將介紹 **Linux**，**macOS**，**Windows** 安裝 [RabbitMQ](http://www.rabbitmq.com/) 的方法，除了
+**Docker** 執行以下指令
 
-Linux 沒嘗試之外，macOS 以及 Windows 我都有在電腦上安裝成功。
+```cmd
+docker-compose up -d
+```
 
 **Linux** 執行以下指令
 
@@ -139,7 +141,7 @@ Start RabbitMQ
 
 ```cmd
              RabbitMQ 3.6.9. Copyright (C) 2007-2016 Pivotal Software, Inc.
-  ##  ##      Licensed under the MPL.  See http://www.rabbitmq.com/
+  ##  ##      Licensed under the MPL.  See https://www.rabbitmq.com/
   ##  ##
   ##########  Logs: /usr/local/var/log/rabbitmq/rabbit@localhost.log
   ######  ##        /usr/local/var/log/rabbitmq/rabbit@localhost-sasl.log
@@ -193,16 +195,6 @@ Install Celery
 pip install celery
 ```
 
-Celery 目前最新的版本為 [v4.1.0](https://github.com/celery/celery/releases/tag/v4.1.0) ，假如你是 Windows 用戶，請安裝 [v3.1.24](https://github.com/celery/celery/releases/tag/v3.1.24) ，
-
-因為 [v4.1.0](https://github.com/celery/celery/releases/tag/v4.1.0) 不支援 Windows
-
-Windows 請安裝 Celery [v3.1.24](https://github.com/celery/celery/releases/tag/v3.1.24)
-
-```cmd
- pip install celery==3.1.24
-```
-
 ### Setting Celery
 
 先建立一個 [celery.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/celery.py)，路徑如下，
@@ -210,14 +202,18 @@ Windows 請安裝 Celery [v3.1.24](https://github.com/celery/celery/releases/tag
 django_celery_tutorial/django_celery_tutorial/[celery.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/celery.py)
 
 ```python
-from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
+# from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_celery_tutorial.settings')
 
-app = Celery('django_celery_tutorial')
+app = Celery(
+    'django_celery_tutorial',
+    # broker='amqp://celery:password123@rabbitmq:5672/my_vhost',
+    broker='amqp://celery:password123@0.0.0.0:5672/my_vhost',
+)
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
@@ -227,63 +223,24 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+# app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 
 @app.task(bind=True)
 def debug_task(self):
     print('Request: {0!r}'.format(self.request))
-
 ```
 
-***這邊補充一下，假如你是 Windows 用戶***
+接著我們再修改 [`__init__.py`](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/__init__.py)，路徑如下
 
-因為 Windows 用戶 Celery 是安裝 [v3.1.24](https://github.com/celery/celery/releases/tag/v3.1.24) 版本，所以有一些地方
-
-不太一樣，可以參考 django_celery_tutorial/django_celery_tutorial/[celery_windows.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/celery_windows.py)
+django_celery_tutorial/django_celery_tutorial/[`__init__.py`](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/__init__.py)
 
 ```python
-from __future__ import absolute_import, unicode_literals
-import os
-from celery import Celery
-from django.conf import settings
-
-# set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_celery_tutorial.settings')
-
-app = Celery('django_celery_tutorial')
-
-# Using a string here means the worker doesn't have to serialize
-# the configuration object to child processes.
-# - namespace='CELERY' means all celery-related configuration keys
-#   should have a `CELERY_` prefix.
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-
-app.config_from_object('django.conf:settings')
-
-# Load task modules from all registered Django app configs.
-# app.autodiscover_tasks()
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-
-
-@app.task(bind=True)
-def debug_task(self):
-    print('Request: {0!r}'.format(self.request))
-
-```
-
-接著我們再修改 [__init__.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/__init__.py)，路徑如下
-
-django_celery_tutorial/django_celery_tutorial/[__init__.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/__init__.py)
-
-```python
-from __future__ import absolute_import, unicode_literals
-
 # This will make sure the app is always imported when
 # Django starts so that shared_task will use this app.
 from .celery import app as celery_app
 
 __all__ = ['celery_app']
-
 ```
 
 再建立一個 [tasks.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/tutorial/tasks.py)，路徑如下
@@ -291,22 +248,21 @@ __all__ = ['celery_app']
 django_celery_tutorial/tutorial/[tasks.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/tutorial/tasks.py)
 
 ```python
-from __future__ import absolute_import, unicode_literals
 from celery import shared_task
 from django.core.mail import send_mail
 
 
-@shared_task
+@shared_task(ignore_result=True)
 def task_mail():
-    subject = 'subject test'
-    message = 'message test'
-    mail_sent = send_mail(subject,
-                          message,
-                          'admin@celery_test.com',
-                          ['xxxxxxx@gmail.com',
-                           'xxxxxxx@gmail.com', 'xxxxxxx@yahoo.com.tw'])
-    return mail_sent
-
+    subject = "celery subject test"
+    message = "celery message test"
+    recipient = ["xxxxxx@gmail.com", "xxxxxx@gmail.com", "xxxxxx@yahoo.com.tw"]
+    send_mail(
+        subject,
+        message,
+        "admin@celery_test.com",
+        recipient,
+    )
 ```
 
 [Django](https://www.djangoproject.com/) 寄送信箱的方法可以參考我之前寫的 [使用 Django 發送信件](https://github.com/twtrubiks/django_social_login_tutorial#%E4%BD%BF%E7%94%A8-django--%E7%99%BC%E9%80%81%E4%BF%A1%E4%BB%B6)
@@ -323,9 +279,7 @@ from tutorial.tasks import task_mail
 
 def task_use_celery(request):
     task_mail.delay()
-    return render(request,
-                  'tutorial/process_done.html')
-                  'tutorial/process_done.html')
+    return render(request, "tutorial/process_done.html")
 ```
 
 ## 執行畫面
@@ -342,7 +296,7 @@ def task_use_celery(request):
 
 第一步，請先確認 RabbitMQ 已經啟動，接著我們再啟動 celery worker，
 
-請再開啟一個 shell ，使用以下指令啟動 celery worker
+請再開啟一個 shell，使用以下指令啟動 celery worker
 
 Run the Celery worker server
 
@@ -358,28 +312,115 @@ proj 也就是你的名稱，我們在 [celery.py](https://github.com/twtrubiks/
 celery -A django_celery_tutorial worker -l info
 ```
 
+這邊注意:exclamation::exclamation: 如果你的 `task.py` 有修改任何 code,
+
+記得你的 worker (上面這行指令) 也要重啟, 不然會一直讀到舊的:anguished:
+
 ![alt tag](http://i.imgur.com/hOeGFuU.png)
 
 ![alt tag](http://i.imgur.com/QUEmyFE.png)
 
-假如你發生如下錯誤，並且你是 Windows 用戶，請回到 [Celery Tutorial](https://github.com/twtrubiks/django-celery-tutorial#celery-tutorial) 觀看說明
+請再開啟一個 shell,
 
 ```cmd
-[2017-08-27 17:35:27,348: ERROR/MainProcess] Task handler raised error: ValueError('not enough values to unpack (expected 3, got 0)',)
-Traceback (most recent call last):
-  File "c:\users\twtrubiks\anaconda3\envs\venv_362\lib\site-packages\billiard\pool.py", line 358, in workloop
-    result = (True, prepare_result(fun(*args, **kwargs)))
-  File "c:\users\twtrubiks\anaconda3\envs\venv_362\lib\site-packages\celery\app\trace.py", line 525, in _fast_trace_task
+python3 manage.py shell
+```
 
-    tasks, accept, hostname = _loc
-ValueError: not enough values to unpack (expected 3, got 0)
+```python
+from tutorial.tasks import *
+task_mail.delay()
+```
+
+執行後, 你會發現 celery 的 terminal 會顯示一些資訊,
+
+celery 有非常多 [Signals](https://docs.celeryq.dev/en/stable/userguide/signals.html#signals) 可以使用,
+
+```python
+
+@signals.task_prerun.connect
+def prerun_task_mail(task_id, task, *args, **kwargs):
+    print(f"task_id: {task_id},  task: {task}")
+    print("prerun_task_mail ......")
+
+@signals.task_postrun.connect
+def postrun_task_mail(task_id, task, *args, **kwargs):
+    print(f"task_id: {task_id},  task: {task}")
+    print("postrun_task_mail ......")
+
+@signals.task_success.connect
+def success_task_mail(sender=None, **kwargs):
+    print(sender)
+    print("success_task_mail ......")
+
+@signals.task_failure.connect
+def failure_task_mail(task_id, exception, *args, **kwargs):
+    print(f"task_id: {task_id},  exception: {exception}")
+    print("failure_task_mail ......")
+```
+
+```cmd
+# 這個代表執行任務前 會預先執行的 任務
+[2023-10-14 10:23:53,434: WARNING/ForkPoolWorker-8] prerun_task_mail ......
+
+# 也可以定義, 任務成功或失敗所需要執行的任務
+[2023-10-14 10:23:53,435: WARNING/ForkPoolWorker-8] success_task_mail ......
+
+# 這個代表執行任務後 會執行的 任務
+[2023-10-14 10:23:53,435: WARNING/ForkPoolWorker-8] postrun_task_mail ......
+```
+
+celery 也有 retry 機制
+
+```python
+from tutorial.tasks import *
+task_mail_retry().delay()
+```
+
+程式碼如下,
+
+注意要使用 `bind=True`, 可參考[bound-tasks](https://docs.celeryq.dev/en/latest/userguide/tasks.html#bound-tasks),
+
+尤其是使用 `self.retry(...)`
+
+```python
+@shared_task(ignore_result=True, bind=True)
+def task_mail_retry(self):
+    try:
+        if 1:
+            raise Exception()
+
+        subject = "celery subject test"
+        message = "celery message test"
+        recipient = ["xxxxxx@gmail.com", "xxxxxx@gmail.com", "xxxxxx@yahoo.com.tw"]
+        send_mail(
+            subject,
+            message,
+            "admin@celery_test.com",
+            recipient,
+        )
+
+    except Exception as e:
+        raise self.retry(exc=e, countdown=3)
+```
+
+你會發現他自己會自行 retry, 文件可參考 [Retrying](https://docs.celeryq.dev/en/stable/userguide/tasks.html#retrying)
+
+預設 retry 3次, 如果還是失敗, 就跳出 Exception
+
+```cmd
+[2023-10-14 10:32:17,125: INFO/ForkPoolWorker-8] Task tutorial.tasks.task_mail_retry[2efde179-34f5-4493-aea4-985b8d87e10f] retry: Retry in 3s: Exception()
+[2023-10-14 10:32:20,126: WARNING/ForkPoolWorker-8] prerun_task_mail ......
+[2023-10-14 10:32:20,127: INFO/ForkPoolWorker-8] Task tutorial.tasks.task_mail_retry[2efde179-34f5-4493-aea4-985b8d87e10f] retry: Retry in 3s: Exception()
+
+[2023-10-14 10:32:26,131: WARNING/ForkPoolWorker-8] failure_task_mail ......
+[2023-10-14 10:32:26,131: ERROR/ForkPoolWorker-8] Task tutorial.tasks.task_mail_retry[2efde179-34f5-4493-aea4-985b8d87e10f] raised unexpected: Exception()
 ```
 
 ## 監控 Celery
 
 ***Flower is a web based tool for monitoring and administrating Celery clusters***
 
-[http://flower.readthedocs.io/en/latest/](http://flower.readthedocs.io/en/latest/)
+[https://flower.readthedocs.io/en/latest/](https://flower.readthedocs.io/en/latest/)
 
 ```cmd
 pip install flower
@@ -388,14 +429,32 @@ pip install flower
 launch from Celery
 
 ```cmd
-celery flower -A proj --address=127.0.0.1 --port=5555
+celery -A proj flower -l info
 ```
 
 proj 也就是你的名稱，我們也可以直接使用下方指令啟動 flower
 
 ```cmd
-celery flower -A django_celery_tutorial
+celery -A django_celery_tutorial flower -l info
 ```
+
+如果想要保存 flower 的資料,
+
+```cmd
+celery -A django_celery_tutorial flower --persistent=True -l info
+```
+
+預設會在路徑下多個 `flower` 檔案,
+
+可參考官網參數說明 [https://flower.readthedocs.io/en/latest/config.html](https://flower.readthedocs.io/en/latest/config.html)
+
+如果你想要基本的 auth, 可以使用如下指令
+
+```cmd
+celery -A django_celery_tutorial flower -l info --basic_auth=twtrubiks:password123
+```
+
+詳細可參考 [https://flower.readthedocs.io/en/latest/auth.html#http-basic-authentication](https://flower.readthedocs.io/en/latest/auth.html#http-basic-authentication)
 
 [http://localhost:5555](http://localhost:5555)
 
@@ -407,7 +466,7 @@ celery flower -A django_celery_tutorial
 
 更多說明可參考官網
 
-[http://flower.readthedocs.io/en/latest/](http://flower.readthedocs.io/en/latest/)
+[https://flower.readthedocs.io/en/latest/](https://flower.readthedocs.io/en/latest/)
 
 ## 後記
 
@@ -419,14 +478,22 @@ celery flower -A django_celery_tutorial
 
 ## 執行環境
 
-* Python 3.6.2
+* Python 3.9
 
 ## Reference
 
 * [Django](https://www.djangoproject.com/)
-* [Celery](http://celery.readthedocs.io/en/latest/index.html)
-* [Flower](http://flower.readthedocs.io/en/latest/)
+* [Celery](https://docs.celeryq.dev/en/stable/)
+* [Flower](https://flower.readthedocs.io/en/latest/)
 * [Using Celery with Django](http://celery.readthedocs.io/en/latest/django/first-steps-with-django.html#first-steps-with-django)
+
+## Donation
+
+文章都是我自己研究內化後原創，如果有幫助到您，也想鼓勵我的話，歡迎請我喝一杯咖啡:laughing:
+
+![alt tag](https://i.imgur.com/LRct9xa.png)
+
+[贊助者付款](https://payment.opay.tw/Broadcaster/Donate/9E47FDEF85ABE383A0F5FC6A218606F8)
 
 ## License
 

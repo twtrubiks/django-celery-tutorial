@@ -6,26 +6,24 @@ from tutorial.tasks import task_mail
 
 # Create your views here.
 
+
 def dashboard(request):
-    return render(request,
-                  'tutorial/dashboard.html')
+    return render(request, "tutorial/dashboard.html")
 
 
 def task_use_celery(request):
     task_mail.delay()
-    return render(request,
-                  'tutorial/process_done.html')
+    return render(request, "tutorial/process_done.html")
 
 
 def task_not_use_celery(request):
-    subject = 'subject test'
-    message = 'message test'
-    recipient = ['xxxxxx@gmail.com',
-                 'xxxxxx@gmail.com',
-                 'xxxxxx@yahoo.com.tw']
-    send_mail(subject,
-              message,
-              'admin@celery_test.com',
-              recipient)
-    return render(request,
-                  'tutorial/process_done.html')
+    subject = "not celery subject test"
+    message = "not celery message test"
+    recipient = ["xxxxxx@gmail.com", "xxxxxx@gmail.com", "xxxxxx@yahoo.com.tw"]
+    send_mail(
+        subject,
+        message,
+        "admin@celery_test.com",
+        recipient,
+    )
+    return render(request, "tutorial/process_done.html")
