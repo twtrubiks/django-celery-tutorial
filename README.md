@@ -416,6 +416,42 @@ def task_mail_retry(self):
 [2023-10-14 10:32:26,131: ERROR/ForkPoolWorker-8] Task tutorial.tasks.task_mail_retry[2efde179-34f5-4493-aea4-985b8d87e10f] raised unexpected: Exception()
 ```
 
+## Celery Useful settings
+
+可參考 [Useful settings](https://cheat.readthedocs.io/en/latest/django/celery.html#useful-settings)
+
+在 [settings.py](https://github.com/twtrubiks/django-celery-tutorial/blob/master/django_celery_tutorial/settings.py) 底下的最後
+
+```python
+......
+
+# celery
+# CELERY_TASK_ALWAYS_EAGER=1  # 可以中斷點 -> flower 看不到
+CELERY_TASK_ALWAYS_EAGER=0  # 不可以中斷點 -> flower 看的到
+```
+
+這個 `CELERY_TASK_ALWAYS_EAGER` 非常實用,
+
+簡單說, 如果你想要 debug celery 裡面的東西, 用這個就對了,
+
+預設是 0, 也就是都會交給 celery 執行,
+
+你會沒辦法在 celery 底下下中斷點 (Flower 會有任務排成的紀錄),
+
+假如你設定成 1, 你會發現你可以在 celery 底下下中斷點了,
+
+但相反的, Flower 中就不會有任務排成的紀錄, 因為都被 local block 了.
+
+官方文件說明如下
+
+```text
+CELERY_TASK_ALWAYS_EAGER: If this is True, all tasks will be executed locally by blocking until the task returns. apply_async() and Task.delay() will return an EagerResult instance, which emulates the API and behavior of AsyncResult, except the result is already evaluated.
+
+That is, tasks will be executed locally instead of being sent to the queue.
+
+This is useful mainly when running tests, or running locally without Celery workers.
+```
+
 ## 監控 Celery
 
 ***Flower is a web based tool for monitoring and administrating Celery clusters***

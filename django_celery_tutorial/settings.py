@@ -134,3 +134,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# celery
+# CELERY_TASK_ALWAYS_EAGER=1  # 可以中斷點 -> flower 看不到
+CELERY_TASK_ALWAYS_EAGER=0  # 不可以中斷點 -> flower 看的到
